@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>EventGo · Expense Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; }
+        body { background: #f0f5fc; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 1rem; }
+        
+        /* Login Styles */
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 28px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 60px rgba(0,20,40,0.15);
+        }
+        .login-container h1 {
+            font-size: 2.5rem;
+            color: #0b2b44;
+            text-align: center;
+            margin-bottom: 0.3rem;
+        }
+        .login-container .subtitle {
+            text-align: center;
+            color: #4b6f8f;
+            margin-bottom: 2rem;
+        }
+        .login-container .logo-icon {
+            text-align: center;
+            font-size: 3rem;
+            color: #1a6bc4;
+            margin-bottom: 0.5rem;
+        }
+        .login-container input, .login-container select {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid #d9e2ec;
+            border-radius: 16px;
+            font-size: 1rem;
+            transition: 0.15s;
+            background: white;
+        }
+        .login-container input:focus, .login-container select:focus {
+            outline: none;
+            border-color: #1a6bc4;
+            box-shadow: 0 0 0 3px rgba(26,107,196,0.15);
+        }
+        .login-container button {
+            width: 100%;
+            padding: 0.9rem;
+            background: #1a5f9e;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .login-container button:hover { background: #0f4270; }
+        .login-container .error-msg {
+            color: #d32f2f;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .login-container .user-info {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #4b6f8f;
+            margin-top: 1rem;
+        }
+        .login-container .register-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: transparent;
+            color: #1a5f9e;
+            border: 2px solid #1a5f9e;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .login-container .register-btn:hover {
+            background: #e8eff8;
+        }
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #b0c4d8;
+            position: relative;
+        }
+        .divider hr {
+            border: none;
+            border-top: 1px solid #e2ecf5;
+            margin-top: -0.8rem;
+        }
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+        }
+        
+        /* Main App Styles */
+        .app-container { max-width: 540px; width: 100%; margin: 0 auto; display: none; }
+        .card {
+            background: white; border-radius: 28px; box-shadow: 0 8px 24px rgba(0,20,40,0.08);
+            padding: 1.5rem 1.2rem; margin-bottom: 1.5rem; border: 1px solid #eaf0f6;
+        }
+        .card-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+        .card-header i { font-size: 1.6rem; color: #1a6bc4; }
+        .card-header h2 { font-weight: 600; font-size: 1.4rem; color: #0b2b44; letter-spacing: -0.3px; }
+        .badge { background: #e8eff8; padding: 0.2rem 0.9rem; border-radius: 40px; font-size: 0.75rem; font-weight: 600; color: #1a4b78; }
+        
+        .role-selector {
+            display: flex; gap: 0.5rem; margin-left: auto; background: #ecf3fa;
+            padding: 0.2rem 0.3rem; border-radius: 60px;
+        }
+        .role-btn {
+            border: none; background: transparent; padding: 0.3rem 1rem; border-radius: 40px;
+            font-weight: 600; font-size: 0.8rem; color: #1a4b78; cursor: pointer; transition: 0.1s;
+        }
+        .role-btn.active { background: #1a6bc4; color: white; box-shadow: 0 2px 8px rgba(26,107,196,0.25); }
+        .role-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .subnote {
+            color: #4b6f8f; font-size: 0.8rem; margin-bottom: 1rem; display: flex;
+            align-items: center; gap: 0.4rem; background: #f0f6fe; padding: 0.5rem 1rem; border-radius: 60px;
+            flex-wrap: wrap;
+        }
+        .subnote i { color: #2a7de1; }
+        .input-group { margin-bottom: 1rem; }
+        .input-group label {
+            display: block; font-size: 0.75rem; font-weight: 600; color: #1f4970;
+            margin-bottom: 0.2rem; letter-spacing: 0.2px; text-transform: uppercase; opacity: 0.8;
+        }
+        .input-group input, .input-group select {
+            width: 100%; padding: 0.75rem 1rem; border: 1px solid #d9e2ec; border-radius: 18px;
+            font-size: 1rem; background: white; transition: 0.15s; -webkit-appearance: none; appearance: none;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none; border-color: #1a6bc4; box-shadow: 0 0 0 3px rgba(26,107,196,0.15);
+        }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .receipt-row {
+            background: #f4f9ff; border-radius: 40px; padding: 0.5rem 1rem 0.5rem 1.2rem;
+            display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin: 0.5rem 0 0.2rem;
+        }
+        .receipt-row select { flex: 1 1 70px; border: none; background: white; border-radius: 40px; padding: 0.4rem 0.8rem; font-size: 0.9rem; border: 1px solid #d0ddee; }
+        .receipt-row .file-wrap { flex: 2; min-width: 120px; }
+        .receipt-row input[type="file"] { font-size: 0.75rem; background: white; border-radius: 40px; padding: 0.3rem 0.6rem; width: 100%; border: 1px solid #d0ddee; }
+        
+        .btn-primary {
+            background: #1a5f9e; color: white; border: none; padding: 0.9rem 1rem; border-radius: 60px;
+            font-weight: 600; font-size: 1.1rem; width: 100%; cursor: pointer; transition: 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.8rem;
+            box-shadow: 0 4px 8px rgba(26,91,158,0.2);
+        }
+        .btn-primary:active { background: #0f4270; transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .btn-secondary {
+            background: #e8eff8; color: #1a4b78; border: none; padding: 0.6rem 1rem; border-radius: 60px;
+            font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.15s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+        }
+        .btn-secondary:active { background: #d0ddee; }
+        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-logout {
+            background: #dc3545; color: white; border: none; padding: 0.4rem 1rem; border-radius: 40px;
+            font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: 0.15s;
+        }
+        .btn-logout:hover { background: #c82333; }
+        
+        .entry-list { max-height: 400px; overflow-y: auto; margin: 0 -0.2rem; padding: 0 0.1rem; }
+        .entry-item {
+            background: #fafdff; border-radius: 18px; padding: 0.7rem 0.9rem; margin-bottom: 0.5rem;
+            border-left: 5px solid #2a7de1; box-shadow: 0 2px 6px rgba(0,0,0,0.02); border: 1px solid #e5eef7;
+        }
+        .entry-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .entry-name { font-weight: 700; color: #0b2b44; font-size: 1rem; }
+        .entry-amount { font-weight: 600; color: #1a5f9e; background: #e3edf9; padding: 0.1rem 0.8rem; border-radius: 40px; font-size: 0.9rem; }
+        .entry-details { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; font-size: 0.8rem; color: #3f6383; margin-top: 0.1rem; }
+        .entry-details i { width: 1rem; color: #4d7aa8; margin-right: 0.1rem; }
+        .entry-receipt-badge { background: #e8f0fa; border-radius: 30px; padding: 0.1rem 0.7rem; font-size: 0.7rem; font-weight: 500; color: #1a4b78; display: inline-flex; align-items: center; gap: 0.2rem; }
+        .entry-actions { display: flex; justify-content: flex-end; margin-top: 0.2rem; }
+        .remove-btn { background: transparent; border: none; color: #b8ccdf; font-size: 1.1rem; padding: 0.1rem 0.3rem; cursor: pointer; }
+        .remove-btn:active { color: #b02b2b; }
+        .empty-state { color: #758ea5; text-align: center; padding: 2rem 0.5rem; font-style: italic; font-size: 0.95rem; }
+        
+        .action-bar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.6rem; margin-top: 1.2rem; }
+        .btn-outline {
+            background: transparent; border: 1.5px solid #c3d6e8; color: #1d4b78;
+            padding: 0.6rem 1.2rem; border-radius: 60px; font-weight: 600; font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: 0.1s;
+            flex: 1 1 auto; justify-content: center; background: white;
+        }
+        .btn-outline:active { background: #e3edf9; border-color: #1a6bc4; }
+        .btn-outline.download { background: #1a5f9e; border-color: #1a5f9e; color: white; }
+        .btn-outline.download:active { background: #0f4270; }
+        .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .footer-hint { margin-top: 0.8rem; font-size: 0.7rem; color: #5b7c99; text-align: center; opacity: 0.7; border-top: 1px solid #e2ecf5; padding-top: 0.8rem; }
+        .badge-count { background: #dce5f0; padding: 0.1rem 0.8rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; color: #1a3d5e; }
+        .project-tag { background: #d4e2f5; border-radius: 30px; padding: 0.15rem 0.8rem; font-size: 0.7rem; font-weight: 600; color: #1a4b78; display: inline-block; }
+        .project-selector { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem; }
+        .project-selector select { flex: 2; min-width: 120px; }
+        .project-selector .btn-secondary { flex: 0 0 auto; }
+        .loading-spinner { display: inline-block; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .user-badge {
+            background: #e8eff8; padding: 0.2rem 0.9rem; border-radius: 40px;
+            font-size: 0.75rem; font-weight: 600; color: #1a4b78;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+        .user-badge .role-tag {
+            background: #1a6bc4; color: white; padding: 0.1rem 0.6rem;
+            border-radius: 20px; font-size: 0.6rem; text-transform: uppercase;
+        }
+        
+        .senior-lock-overlay {
+            background: rgba(0,0,0,0.03); border-radius: 20px; padding: 1rem 1rem;
+            margin-bottom: 1rem; border: 1px dashed #b8cfe0;
+        }
+        .senior-lock-overlay .lock-row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+        .senior-lock-overlay input { flex: 2; min-width: 140px; padding: 0.6rem 1rem; border-radius: 60px; border: 1px solid #d0ddee; font-size: 0.95rem; }
+        .senior-lock-overlay button { background: #1a5f9e; color: white; border: none; padding: 0.6rem 1.4rem; border-radius: 60px; font-weight: 600; cursor: pointer; }
+        .senior-lock-overlay .lock-status { font-size: 0.8rem; color: #1d4b78; margin-top: 0.3rem; }
+        .senior-lock-overlay .lock-status i { margin-right: 0.3rem; }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 0.8rem 1.5rem;
+            border-radius: 50px; font-size: 0.9rem; z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none; animation: slideUp 0.3s ease;
+        }
+        .toast.success { background: #28a745; }
+        .toast.error { background: #dc3545; }
+        .toast.info { background: #1a6bc4; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        @media (max-width: 420px) {
+            .card { padding: 1.2rem 0.9rem; }
+            .row-2 { grid-template-columns: 1fr; gap: 0.2rem; }
+            .receipt-row { flex-direction: column; align-items: stretch; }
+            .receipt-row select { flex: 1; }
+            .role-selector { margin-left: 0; width: 100%; justify-content: flex-end; }
+            .project-selector { flex-direction: column; align-items: stretch; }
+            .login-container { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========== TOAST NOTIFICATION ========== -->
+<div id="toast" class="toast"></div>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="loginScreen" class="login-container">
+    <div class="logo-icon"><i class="fas fa-receipt"></i></div>
+    <h1>EventGo</h1>
+    <p class="subtitle">Expense Tracker · Enterprise</p>
+    
+    <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Username" required autocomplete="username">
+        <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
+        <button type="submit"><i class="fas fa-sign-in-alt"></i> Login</button>
+        <div id="loginError" class="error-msg"></div>
+    </form>
+    
+    <div class="divider">
+        <hr>
+        <span>or</span>
+    </div>
+    
+    <button class="register-btn" onclick="showRegister()">
+        <i class="fas fa-user-plus"></i> Create New Account
+    </button>
+    
+    <div class="user-info">
+        <small>Default: admin / admin123</small>
+    </div>
+</div>
+
+<!-- ========== REGISTER SCREEN ========== -->
+<div id="registerScreen" class="login-container" style="display:none;">
+    <div class="logo-icon"><i class="fas fa-user-plus"></i></div>
+    <h1>Create Account</h1>
+    <p class="subtitle">Join EventGo Expense Tracker</p>
+    
+    <form id="registerForm">
+        <input type="text" id="regFullName" placeholder="Full Name" required>
+        <input type="text" id="regUsername" placeholder="Username" required>
+        <input type="password" id="regPassword" placeholder="Password (min 6 characters)" required>
+        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+        
+        <select id="regRole">
+            <option value="employee">Employee</option>
+            <option value="senior">Senior (Admin)</option>
+        </select>
+        
+        <button type="submit" style="background:#28a745;">
+            <i class="fas fa-check"></i> Register
+        </button>
+        <div id="registerError" class="error-msg"></div>
+    </form>
+    
+    <div style="margin-top:1rem; text-align:center;">
+        <button onclick="showLogin()" style="background:transparent; border:none; color:#1a6bc4; cursor:pointer; font-size:0.9rem;">
+            <i class="fas fa-arrow-left"></i> Back to Login
+        </button>
+    </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="appContent" class="app-container">
+
+    <!-- Header -->
+    <div class="card" style="background: #0b2b44; border: none; padding: 1rem 1.5rem; border-radius: 32px; margin-bottom: 1.2rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem; color: white; flex-wrap: wrap;">
+            <i class="fas fa-receipt" style="font-size: 1.6rem; color: #9bc3f0;"></i>
+            <span style="font-weight: 600; font-size: 1.4rem; letter-spacing: -0.5px;">EventGo</span>
+            <span style="margin-left: auto; display: flex; gap: 0.5rem; align-items: center;">
+                <span class="user-badge" style="background: rgba(255,255,255,0.15); color: #c6ddf5;">
+                    <i class="fas fa-user"></i>
+                    <span id="userNameDisplay">User</span>
+                    <span class="role-tag" id="userRoleDisplay">employee</span>
+                </span>
+                <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+            </span>
+        </div>
+        <div style="color: #b0cef0; font-size: 0.75rem; margin-top: 0.2rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <span><i class="fas fa-database"></i> <span id="totalExpensesDisplay">0</span> bills</span>
+            <span>·</span>
+            <span><i class="fas fa-folder-open"></i> <span id="projectCountDisplay">0</span> projects</span>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-user-circle"></i>
+            <h2>Dashboard</h2>
+            <div class="role-selector">
+                <button class="role-btn active" data-role="employee" id="roleEmployee">👤 Employee</button>
+                <button class="role-btn" data-role="senior" id="roleSenior" disabled>👑 Senior</button>
+            </div>
+        </div>
+
+        <!-- Senior Lock -->
+        <div id="seniorLockArea" style="display: none;">
+            <div class="senior-lock-overlay">
+                <div class="lock-row">
+                    <i class="fas fa-lock" style="color:#1a6bc4;"></i>
+                    <input type="password" id="seniorPassword" placeholder="Enter senior password" autocomplete="off">
+                    <button id="seniorUnlockBtn"><i class="fas fa-key"></i> Unlock</button>
+                </div>
+                <div class="lock-status" id="lockStatus"><i class="fas fa-info-circle"></i> Enter password to view all data</div>
+            </div>
+        </div>
+
+        <div class="subnote">
+            <i class="fas fa-info-circle"></i>
+            <span id="viewLabel">You are viewing <strong>your own</strong> bills</span>
+        </div>
+
+        <!-- Project Management -->
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.2rem; background: #f4f9ff; padding: 0.8rem 1rem; border-radius: 40px;">
+            <div style="flex: 2; min-width: 140px;">
+                <input type="text" id="newProjectInput" placeholder="New project name (e.g. S16)" style="width:100%; padding:0.6rem 1rem; border-radius:60px; border:1px solid #d0ddee; font-size:0.95rem;">
+            </div>
+            <button id="addProjectBtn" class="btn-secondary" style="flex:0 0 auto;"><i class="fas fa-plus"></i> Add Project</button>
+        </div>
+
+        <!-- Project Selector -->
+        <div class="project-selector">
+            <label style="font-weight:600; color:#1f4970; font-size:0.8rem; text-transform:uppercase; opacity:0.8;"><i class="fas fa-folder"></i> Project</label>
+            <select id="projectSelect" required>
+                <option value="">— All projects —</option>
+            </select>
+            <button id="refreshProjectBtn" class="btn-secondary" style="flex:0 0 auto; padding:0.4rem 1rem;"><i class="fas fa-sync-alt"></i></button>
+        </div>
+
+        <!-- Add Expense Form -->
+        <form id="expenseForm" enctype="multipart/form-data">
+            <div class="input-group">
+                <label><i class="far fa-user"></i> Name <span style="font-weight:400; text-transform:none; opacity:0.6;">(your name)</span></label>
+                <input type="text" id="employeeName" placeholder="Your full name" required>
+            </div>
+            <div class="row-2">
+                <div class="input-group">
+                    <label><i class="far fa-calendar-alt"></i> Date</label>
+                    <input type="date" id="expenseDate" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-rupee-sign"></i> Amount</label>
+                    <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                </div>
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-map-pin"></i> Where <span style="font-weight:400; text-transform:none; opacity:0.6;">(food, travel, etc.)</span></label>
+                <input type="text" id="whereField" placeholder="e.g. Office lunch, Uber ride" required>
+            </div>
+
+            <div class="receipt-row">
+                <label style="display:flex; align-items:center; gap:0.2rem; font-weight:500; color:#1a3d5e;"><i class="fas fa-paperclip"></i> Receipt?</label>
+                <select id="receiptYesNo">
+                    <option value="yes">Yes</option>
+                    <option value="no" selected>No</option>
+                </select>
+                <div class="file-wrap" id="receiptUploadWrapper">
+                    <input type="file" id="receiptFile" accept=".jpg,.jpeg,.png,.pdf,.heic">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="addExpenseBtn"><i class="fas fa-plus-circle"></i> Add bill</button>
+        </form>
+    </div>
+
+    <!-- Bills List -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-list-ul"></i>
+            <h2>Bills</h2>
+            <span class="badge-count" id="entryCount">0</span>
+        </div>
+
+        <div class="entry-list" id="entriesContainer">
+            <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn-outline" id="excelBtn"><i class="fas fa-file-excel"></i> Excel</button>
+            <button class="btn-outline download" id="zipBtn"><i class="fas fa-file-archive" style="color: #e67e22;"></i> Zip+Excel</button>
+        </div>
+        <div class="footer-hint">
+            <i class="fas fa-download"></i> Downloads only the selected project
+        </div>
+    </div>
+</div>
+
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+    (function() {
+        // ============================
+        // CONFIGURATION
+        // ============================
+        const API_URL = '/api';
+        const SENIOR_PASSWORD = 'eventgo2026';
+        
+        // ============================
+        // STATE
+        // ============================
+        let authToken = localStorage.getItem('token') || null;
+        let currentUser = null;
+        let currentRole = 'employee';
+        let seniorUnlocked = false;
+        let projects = [];
+        let expenses = [];
+        
+        // ============================
+        // DOM REFS
+        // ============================
+        const loginScreen = document.getElementById('loginScreen');
+        const registerScreen = document.getElementById('registerScreen');
+        const appContent = document.getElementById('appContent');
+        const loginForm = document.getElementById('loginForm');
+        const loginUsername = document.getElementById('loginUsername');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        const registerForm = document.getElementById('registerForm');
+        const regFullName = document.getElementById('regFullName');
+        const regUsername = document.getElementById('regUsername');
+        const regPassword = document.getElementById('regPassword');
+        const regConfirmPassword = document.getElementById('regConfirmPassword');
+        const regRole = document.getElementById('regRole');
+        const registerError = document.getElementById('registerError');
+        
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const userRoleDisplay = document.getElementById('userRoleDisplay');
+        const totalExpensesDisplay = document.getElementById('totalExpensesDisplay');
+        const projectCountDisplay = document.getElementById('projectCountDisplay');
+        
+        const roleEmployeeBtn = document.getElementById('roleEmployee');
+        const roleSeniorBtn = document.getElementById('roleSenior');
+        const seniorLockArea = document.getElementById('seniorLockArea');
+        const seniorPasswordInput = document.getElementById('seniorPassword');
+        const seniorUnlockBtn = document.getElementById('seniorUnlockBtn');
+        const lockStatus = document.getElementById('lockStatus');
+        const viewLabel = document.getElementById('viewLabel');
+        
+        const projectSelect = document.getElementById('projectSelect');
+        const newProjectInput = document.getElementById('newProjectInput');
+        const addProjectBtn = document.getElementById('addProjectBtn');
+        const refreshProjectBtn = document.getElementById('refreshProjectBtn');
+        
+        const expenseForm = document.getElementById('expenseForm');
+        const nameInput = document.getElementById('employeeName');
+        const dateInput = document.getElementById('expenseDate');
+        const amountInput = document.getElementById('amount');
+        const whereInput = document.getElementById('whereField');
+        const receiptSelect = document.getElementById('receiptYesNo');
+        const receiptFileInput = document.getElementById('receiptFile');
+        const addExpenseBtn = document.getElementById('addExpenseBtn');
+        
+        const entriesContainer = document.getElementById('entriesContainer');
+        const entryCount = document.getElementById('entryCount');
+        const excelBtn = document.getElementById('excelBtn');
+        const zipBtn = document.getElementById('zipBtn');
+        const toast = document.getElementById('toast');
+        
+        dateInput.value = new Date().toISOString().split('T')[0];
+        
+        // ============================
+        // TOAST NOTIFICATION
+        // ============================
+        function showToast(message, type = 'info') {
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+        
+        // ============================
+        // API HELPERS
+        // ============================
+        async function apiFetch(endpoint, options = {}) {
+            const headers = {};
+            
+            if (!(options.body instanceof FormData)) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                ...options,
+                headers
+            });
+            
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                authToken = null;
+                currentUser = null;
+                showLogin();
+                showToast('Session expired. Please login again.', 'error');
+                return null;
+            }
+            
+            return response;
+        }
+        
+        // ============================
+        // AUTHENTICATION
+        // ============================
+        async function handleLogin(username, password) {
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('token', authToken);
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    showApp();
+                    showToast(`Welcome, ${currentUser.full_name}!`, 'success');
+                    return true;
+                } else {
+                    loginError.textContent = data.error || 'Invalid credentials';
+                    loginError.style.display = 'block';
+                    return false;
+                }
+            } catch (error) {
+                loginError.textContent = 'Connection error. Is the server running?';
+                loginError.style.display = 'block';
+                return false;
+            }
+        }
+        
+        function showApp() {
+            loginScreen.style.display = 'none';
+            registerScreen.style.display = 'none';
+            appContent.style.display = 'block';
+            userNameDisplay.textContent = currentUser.full_name;
+            userRoleDisplay.textContent = currentUser.role;
+            
+            if (currentUser.role === 'senior') {
+                roleSeniorBtn.disabled = false;
+            } else {
+                roleSeniorBtn.disabled = true;
+            }
+            
+            nameInput.value = currentUser.full_name;
+            nameInput.readOnly = true;
+            
+            loadData();
+        }
+        
+        function showLogin() {
+            loginScreen.style.display = 'block';
+            registerScreen.style.display = 'none';
+            appContent.style.display = 'none';
+            loginError.style.display = 'none';
+        }
+        
+        function showRegister() {
+            loginScreen.style.display = 'none';
+            registerScreen.style.display = 'block';
+            registerError.style.display = 'none';
+        }
+        
+        function handleLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            authToken = null;
+            currentUser = null;
+            showLogin();
+            showToast('Logged out successfully', 'info');
+        }
+        
+// ============================
+// REGISTRATION FUNCTIONS - FIXED
+// ============================
+
+// Show registration screen
+function showRegister() {
+    console.log('🔄 Showing registration screen');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('registerScreen').style.display = 'block';
+    document.getElementById('registerError').style.display = 'none';
+}
+
+// Show login screen
+function showLogin() {
+    console.log('🔄 Showing login screen');
+    document.getElementById('loginScreen').style.display = 'block';
+    document.getElementById('registerScreen').style.display = 'none';
+    document.getElementById('registerError').style.display = 'none';
+}
+
+// Registration form handler
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('📝 Registration form submitted');
+            
+            const fullName = document.getElementById('regFullName').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const role = document.getElementById('regRole').value;
+            
+            // Validation
+            if (!fullName || !username || !password || !confirmPassword) {
+                document.getElementById('registerError').textContent = 'All fields are required';
+                document.getElementById('registerError').style.display = 'block';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                document.getElementById('registerError').textContent = 'Passwords do not match';
+                document.getElementById('registerError').style.display = 'block';
+                return;
+            }
+            
+            if (password.length < 6) {
+                document.getElementById('registerError').textContent = 'Password must be at least 6 characters';
+                document.getElementById('registerError').style.display = 'block';
+                return;
+            }
+            
+            try {
+                console.log('📤 Sending registration request...');
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        username, 
+                        password, 
+                        full_name: fullName,
+                        role: role 
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('📥 Registration response:', data);
+                
+                if (response.ok) {
+                    showToast('Account created successfully! Please login.', 'success');
+                    // Clear registration form
+                    document.getElementById('regFullName').value = '';
+                    document.getElementById('regUsername').value = '';
+                    document.getElementById('regPassword').value = '';
+                    document.getElementById('regConfirmPassword').value = '';
+                    document.getElementById('regRole').value = 'employee';
+                    document.getElementById('registerError').style.display = 'none';
+                    // Show login
+                    showLogin();
+                    // Pre-fill login form
+                    document.getElementById('loginUsername').value = username;
+                    document.getElementById('loginPassword').value = '';
+                } else {
+                    document.getElementById('registerError').textContent = data.error || 'Registration failed';
+                    document.getElementById('registerError').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('❌ Registration error:', error);
+                document.getElementById('registerError').textContent = 'Connection error. Please try again.';
+                document.getElementById('registerError').style.display = 'block';
+            }
+        });
+    }
+});
+
+// Make functions globally accessible
+window.showRegister = showRegister;
+window.showLogin = showLogin;
+        
+        // ============================
+        // DATA LOADING
+        // ============================
+        async function loadData() {
+            await Promise.all([
+                loadProjects(),
+                loadExpenses()
+            ]);
+        }
+        
+        async function loadProjects() {
+            try {
+                const response = await apiFetch('/projects');
+                if (!response) return;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    projects = data;
+                    populateProjects();
+                    projectCountDisplay.textContent = projects.length;
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                showToast('Error loading projects', 'error');
+            }
+        }
+        
+        async function loadExpenses() {
+            try {
+                const selectedProject = projectSelect.value;
+                let url = '/expenses';
+                const params = new URLSearchParams();
+                
+                if (selectedProject) {
+                    params.append('project', selectedProject);
+                }
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                const response = await apiFetch(url);
+                if (!response) return;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    expenses = data;
+                    totalExpensesDisplay.textContent = expenses.length;
+                    renderEntries();
+                }
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+                showToast('Error loading expenses', 'error');
+            }
+        }
+        
+        // ============================
+        // PROJECTS
+        // ============================
+        function populateProjects() {
+            const currentVal = projectSelect.value;
+            projectSelect.innerHTML = '<option value="">— All projects —</option>';
+            projects.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.textContent = p.name;
+                projectSelect.appendChild(opt);
+            });
+            if (projects.some(p => p.name === currentVal)) {
+                projectSelect.value = currentVal;
+            }
+        }
+        
+        async function addProject() {
+            const name = newProjectInput.value.trim();
+            if (!name) {
+                showToast('Please enter a project name', 'error');
+                return;
+            }
+            if (projects.some(p => p.name === name)) {
+                showToast('Project already exists', 'error');
+                return;
+            }
+            
+            try {
+                const response = await apiFetch('/projects', {
+                    method: 'POST',
+                    body: JSON.stringify({ name })
+                });
+                
+                if (response && response.ok) {
+                    const data = await response.json();
+                    showToast(`Project "${name}" added successfully`, 'success');
+                    newProjectInput.value = '';
+                    await loadProjects();
+                    projectSelect.value = name;
+                    await loadExpenses();
+                } else if (response) {
+                    const error = await response.json();
+                    showToast(error.error || 'Error adding project', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding project:', error);
+                showToast('Error adding project', 'error');
+            }
+        }
+        
+        // ============================
+        // EXPENSES
+        // ============================
+        async function addExpense(formData) {
+            try {
+                addExpenseBtn.disabled = true;
+                addExpenseBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                
+                const response = await apiFetch('/expenses', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response && response.ok) {
+                    const data = await response.json();
+                    showToast('Expense added successfully!', 'success');
+                    receiptFileInput.value = '';
+                    amountInput.value = '';
+                    whereInput.value = '';
+                    await loadExpenses();
+                    return true;
+                } else if (response) {
+                    const error = await response.json();
+                    showToast(error.error || 'Error adding expense', 'error');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error adding expense:', error);
+                showToast('Error adding expense. Check server connection.', 'error');
+                return false;
+            } finally {
+                addExpenseBtn.disabled = false;
+                addExpenseBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add bill';
+            }
+        }
+        
+        async function deleteExpense(id) {
+            if (!confirm('Delete this expense?')) return;
+            
+            try {
+                const response = await apiFetch(`/expenses/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response && response.ok) {
+                    showToast('Expense deleted', 'info');
+                    await loadExpenses();
+                } else if (response) {
+                    const error = await response.json();
+                    showToast(error.error || 'Error deleting', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting expense:', error);
+                showToast('Error deleting expense', 'error');
+            }
+        }
+        
+        // ============================
+        // RENDER ENTRIES
+        // ============================
+        function renderEntries() {
+            entriesContainer.innerHTML = '';
+            
+            if (expenses.length === 0) {
+                entriesContainer.innerHTML = `
+                    <div class="empty-state"><i class="fas fa-inbox" style="margin-right: 6px;"></i>No bills found</div>
+                `;
+                entryCount.textContent = '0';
+                return;
+            }
+            
+            entryCount.textContent = expenses.length;
+            
+            expenses.forEach((exp) => {
+                const div = document.createElement('div');
+                div.className = 'entry-item';
+                const hasReceipt = exp.reciept === 1 || exp.reciept === true;
+                const receiptIcon = hasReceipt ? '✅' : '⭕';
+                const fileDisplay = (hasReceipt && exp.reciept_file) ? ` 📎${exp.reciept_file.split('-').pop().slice(0,12)}` : '';
+                const isOwn = currentUser && exp.user_id === currentUser.id;
+                const canDelete = (currentUser && currentUser.role === 'senior') || isOwn;
+                
+                div.innerHTML = `
+                    <div class="entry-top">
+                        <span class="entry-name"><i class="fas fa-user-circle" style="color:#2a7de1;"></i> ${escHtml(exp.employee_name || exp.name)}</span>
+                        <span class="entry-amount">$${Number(exp.amount).toFixed(2)}</span>
+                    </div>
+                    <div class="entry-details">
+                        <span><i class="fas fa-folder"></i> <span class="project-tag">${escHtml(exp.project_name || exp.project)}</span></span>
+                        <span><i class="far fa-calendar-alt"></i> ${escHtml(exp.expense_date || exp.date)}</span>
+                        <span><i class="fas fa-map-pin"></i> ${escHtml(exp.expense_where || exp.where || '')}</span>
+                        <span class="entry-receipt-badge">${receiptIcon} ${hasReceipt ? 'yes' : 'no'} ${fileDisplay}</span>
+                    </div>
+                    ${canDelete ? `
+                        <div class="entry-actions">
+                            <button class="remove-btn" data-id="${exp.id}"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    ` : ''}
+                `;
+                entriesContainer.appendChild(div);
+            });
+            
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id, 10);
+                    deleteExpense(id);
+                });
+            });
+        }
+        
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                return m;
+            });
+        }
+        
+        // ============================
+        // EXPORT FUNCTIONS - UPDATED
+        // ============================
+        async function downloadExcel() {
+            try {
+                const selectedProject = projectSelect.value;
+                let url = '/export/csv';
+                const params = new URLSearchParams();
+                
+                // ✅ Only add project filter if a specific project is selected
+                if (selectedProject) {
+                    params.append('project', selectedProject);
+                }
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                const response = await apiFetch(url);
+                if (!response) return;
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    const suffix = selectedProject || 'all_projects';
+                    link.download = `EventGo_${suffix}_${new Date().toISOString().slice(0,10)}.csv`;
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    showToast(`Excel downloaded for ${selectedProject || 'all projects'}`, 'success');
+                } else {
+                    showToast('Error downloading Excel', 'error');
+                }
+            } catch (error) {
+                console.error('Error downloading Excel:', error);
+                showToast('Error downloading Excel', 'error');
+            }
+        }
+        
+        async function downloadZip() {
+            try {
+                const selectedProject = projectSelect.value;
+                showToast('Preparing ZIP file...', 'info');
+                
+                let url = '/export/csv';
+                const params = new URLSearchParams();
+                
+                // ✅ Only add project filter if a specific project is selected
+                if (selectedProject) {
+                    params.append('project', selectedProject);
+                }
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                const response = await apiFetch(url);
+                if (!response) return;
+                
+                if (response.ok) {
+                    const csvData = await response.text();
+                    
+                    let JSZip;
+                    if (typeof window.JSZip !== 'undefined') {
+                        JSZip = window.JSZip;
+                    } else {
+                        await new Promise((resolve, reject) => {
+                            const script = document.createElement('script');
+                            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+                            script.onload = resolve;
+                            script.onerror = reject;
+                            document.head.appendChild(script);
+                        });
+                        JSZip = window.JSZip;
+                    }
+                    
+                    const zip = new JSZip();
+                    const suffix = selectedProject || 'all_projects';
+                    zip.file(`EventGo_${suffix}.csv`, csvData);
+                    
+                    let meta = `EventGo Expense Report\n`;
+                    meta += `Generated: ${new Date().toLocaleString()}\n`;
+                    meta += `Project: ${selectedProject || 'All Projects'}\n`;
+                    meta += `Total Bills: ${expenses.length}\n`;
+                    meta += `\n--- Receipt Files ---\n`;
+                    
+                    expenses.forEach((e, i) => {
+                        if (e.reciept === 1 || e.reciept === true) {
+                            meta += `#${i+1} ${e.employee_name || e.name} - ${e.reciept_file || 'No file'}\n`;
+                        }
+                    });
+                    zip.file('README.txt', meta);
+                    
+                    expenses.forEach((e) => {
+                        if ((e.reciept === 1 || e.reciept === true) && e.reciept_file) {
+                            const fileName = e.reciept_file.split('-').pop() || 'receipt';
+                            zip.file(`receipts/${fileName}`, `[Placeholder] Receipt for ${e.employee_name || e.name}`);
+                        }
+                    });
+                    
+                    const blob = await zip.generateAsync({ type: 'blob' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `EventGo_${suffix}_${new Date().toISOString().slice(0,10)}.zip`;
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    showToast(`ZIP downloaded for ${selectedProject || 'all projects'}`, 'success');
+                } else {
+                    showToast('Error preparing ZIP', 'error');
+                }
+            } catch (error) {
+                console.error('Error downloading ZIP:', error);
+                showToast('Error downloading ZIP. Check internet connection.', 'error');
+            }
+        }
+        
+        // ============================
+        // ROLE MANAGEMENT
+        // ============================
+        function setRole(role) {
+            currentRole = role;
+            roleEmployeeBtn.classList.toggle('active', role === 'employee');
+            roleSeniorBtn.classList.toggle('active', role === 'senior');
+            
+            if (role === 'senior') {
+                seniorLockArea.style.display = 'block';
+                if (!seniorUnlocked) {
+                    lockStatus.innerHTML = '<i class="fas fa-lock"></i> Enter password to view all data';
+                    lockStatus.style.color = '#1d4b78';
+                }
+                updateViewLabel();
+                loadExpenses();
+            } else {
+                seniorLockArea.style.display = 'none';
+                seniorUnlocked = false;
+                seniorPasswordInput.value = '';
+                updateViewLabel();
+                loadExpenses();
+            }
+        }
+        
+        function tryUnlockSenior() {
+            const pwd = seniorPasswordInput.value.trim();
+            if (pwd === SENIOR_PASSWORD) {
+                seniorUnlocked = true;
+                lockStatus.innerHTML = '<i class="fas fa-check-circle" style="color:#1f8b4c;"></i> Unlocked! Viewing all data.';
+                lockStatus.style.color = '#1f8b4c';
+                updateViewLabel();
+                loadExpenses();
+                showToast('Senior view unlocked', 'success');
+            } else {
+                seniorUnlocked = false;
+                lockStatus.innerHTML = '<i class="fas fa-exclamation-circle" style="color:#b02b2b;"></i> Incorrect password. Try again.';
+                lockStatus.style.color = '#b02b2b';
+                showToast('Incorrect password', 'error');
+            }
+        }
+        
+        function updateViewLabel() {
+            const proj = projectSelect.value || 'all projects';
+            if (currentRole === 'senior' && seniorUnlocked) {
+                viewLabel.innerHTML = `👑 Senior view · <strong>${proj}</strong> (${expenses.length} total)`;
+            } else if (currentRole === 'senior' && !seniorUnlocked) {
+                viewLabel.innerHTML = `<i class="fas fa-lock" style="color:#b02b2b;"></i> Senior view locked – enter password`;
+            } else {
+                viewLabel.innerHTML = `👤 Employee view · <strong>${currentUser ? currentUser.full_name : ''}</strong> · ${proj}`;
+            }
+        }
+        
+        // ============================
+        // EVENT LISTENERS
+        // ============================
+        
+        // Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('clicked');
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value;
+            await handleLogin(username, password);
+        });
+        
+        // Logout
+        logoutBtn.addEventListener('click', handleLogout);
+        
+        // Role buttons
+        roleEmployeeBtn.addEventListener('click', () => setRole('employee'));
+        roleSeniorBtn.addEventListener('click', () => setRole('senior'));
+        
+        // Senior unlock
+        seniorUnlockBtn.addEventListener('click', tryUnlockSenior);
+        seniorPasswordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') tryUnlockSenior();
+        });
+        
+        // Projects
+        addProjectBtn.addEventListener('click', addProject);
+        newProjectInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addProject();
+        });
+        
+        refreshProjectBtn.addEventListener('click', async () => {
+            await loadProjects();
+            await loadExpenses();
+            showToast('Data refreshed', 'info');
+        });
+        
+        projectSelect.addEventListener('change', loadExpenses);
+        
+        // Expense form
+        expenseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const projectId = projectSelect.value;
+            const project = projects.find(p => p.name === projectId);
+            const expenseDate = dateInput.value;
+            const amount = parseFloat(amountInput.value);
+            const expenseWhere = whereInput.value.trim();
+            const receipt = receiptSelect.value;
+            
+            if (!projectId) {
+                showToast('Please select a project', 'error');
+                return;
+            }
+            if (!expenseDate || isNaN(amount) || !expenseWhere) {
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('projectId', project.id);
+            formData.append('expenseDate', expenseDate);
+            formData.append('amount', amount);
+            formData.append('expenseWhere', expenseWhere);
+            formData.append('receipt', receipt);
+            
+            if (receipt === 'yes' && receiptFileInput.files[0]) {
+                formData.append('receipt', receiptFileInput.files[0]);
+            }
+            
+            await addExpense(formData);
+        });
+        
+        // Receipt toggle
+        receiptSelect.addEventListener('change', function() {
+            const wrapper = document.getElementById('receiptUploadWrapper');
+            if (this.value === 'yes') {
+                wrapper.style.display = 'block';
+            } else {
+                wrapper.style.display = 'none';
+                receiptFileInput.value = '';
+            }
+        });
+        if (receiptSelect.value === 'no') {
+            document.getElementById('receiptUploadWrapper').style.display = 'none';
+        }
+        
+        // Export buttons
+        excelBtn.addEventListener('click', downloadExcel);
+        zipBtn.addEventListener('click', downloadZip);
+        
+        // ============================
+        // INITIALIZATION
+        // ============================
+        async function init() {
+            const savedToken = localStorage.getItem('token');
+            const savedUser = localStorage.getItem('user');
+            
+            if (savedToken && savedUser) {
+                try {
+                    authToken = savedToken;
+                    currentUser = JSON.parse(savedUser);
+                    
+                    const response = await apiFetch('/auth/me');
+                    if (response && response.ok) {
+                        const data = await response.json();
+                        currentUser = data;
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                        showApp();
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Session verification failed');
+                }
+            }
+            
+            showLogin();
+        }
+        
+        init();
+        
+    })();
+</script>
+</body>
+</html>
